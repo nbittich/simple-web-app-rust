@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}{{ page.title|upper }} | {{ super() }}{% endblock %}
+{% block body %}
+
+<main class="container">
+    <div class="bg-light p-5 rounded mt-3">
+        <h1>{{page.title}}</h1>
+        <p class="lead">{{page.content}}</p>
+    </div>
+    {%block other%}
+    <div class="btn-group mt-1" role="group" aria-label="Basic example">
+        <a href="/next" class="btn btn-primary">Subscribe</a>
+        <a href="/users" class="btn btn-secondary">List of users</a>
+    </div>
+
+    {% endblock %}
+    {% if page.message %}
+        <p class="alert alert-info mt-2"> {{page.message}} </p>
+    {% endif %}
+</main>
+
+{% endblock %}
