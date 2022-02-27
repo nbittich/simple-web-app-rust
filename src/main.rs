@@ -14,6 +14,8 @@ use diesel::{
 use minijinja::{context, Environment};
 use serde::{Deserialize, Serialize};
 use simple_web_app_rust::{schema::users::dsl::*, user::*};
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
 use std::net::SocketAddr;
 #[derive(Serialize)]
 pub struct Page {
@@ -31,10 +33,7 @@ struct Input {
 
 #[tokio::main]
 async fn main() {
-    if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "simple-web-app-rust=info")
-    }
-    tracing_subscriber::fmt::init();
+    setup_tracing();
 
     let env = include_html();
     let db = simple_web_app_rust::db::get_db();
@@ -49,7 +48,7 @@ async fn main() {
         .merge(users_list(env.clone(), db.clone()))
         .merge(next(env.clone()));
 
-    tracing::info!("listening on {}", socket_addr);
+    tracing::info!("listening on {:?}", socket_addr);
 
     axum::Server::bind(&socket_addr)
         .serve(app.into_make_service())
@@ -167,4 +166,12 @@ fn include_html<'a>() -> Environment<'a> {
 
 fn route(path: &str, method_router: MethodRouter) -> Router {
     Router::new().route(path, method_router)
+}
+
+fn setup_tracing() {
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 }
